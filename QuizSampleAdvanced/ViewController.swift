@@ -21,6 +21,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         setUpQuiz()
+        
         resetResult()
     }
 
@@ -95,7 +96,19 @@ class ViewController: UIViewController {
         self.quizNumber = 0
         self.point = 0
         quizTextView.text = quizArray[quizNumber].0
+        
+        // シャッフル
+        shuffleQuiz()
     }
 
+    func shuffleQuiz() {
+        var shuffledQuizArray: [(String, Int, Int)] = []
+        for _ in 0..<quizArray.count {
+            let index = Int(arc4random_uniform(UInt32(quizArray.count)))
+            shuffledQuizArray.append(quizArray[index])
+            quizArray.remove(at: index)
+        }
+        quizArray = shuffledQuizArray
+    }
 }
 
