@@ -19,9 +19,12 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        // このViewControllerが制御する画面が生成されたときに1度呼ばれる
         setUpQuiz()
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        // このViewControllerが制御する画面が表示される度に呼ばれる
         resetResult()
     }
 
@@ -31,11 +34,12 @@ class ViewController: UIViewController {
     }
     
     func setUpQuiz() {
+        
         // タプルを使って複数の情報をひとまとめにする
         let quiz0 = (text: "Int型は整数を扱うための型である", answer: 1, point: 10)
         let quiz1 = (text: "String型は小数点付きの数値を扱うための型である", answer: 0, point: 10)
         let quiz2 = (text: "プログラミングにおける=(イコール)は代入の意味を持つ", answer: 1, point: 10)
-        let quiz3 = (text: "かける、の演算子は×である", answer: 0, point: 10)
+        let quiz3 = (text: "かける、の演算子は*である", answer: 1, point: 10)
         let quiz4 = (text: "iOSシミュレータを起動してアプリを確認するショートカットキーは、CommandキーとRキーである", answer: 1, point: 10)
         
         // quizArrayに追加していく
@@ -47,14 +51,42 @@ class ViewController: UIViewController {
     }
 
     func updateQuizText() {
+        // .countは配列の要素の"個数"を取得するので、0から数えている普通の数字とズレるので1を引く
         if quizNumber == quizArray.count - 1 {
+            
+            // 問題が終わったら結果をアプリ内に保存
+            let userDefaults = UserDefaults.standard
+            userDefaults.set(point, forKey: "point")
+            userDefaults.synchronize()
+            
             // 結果表示
-            showResult()
+            self.performSegue(withIdentifier: "toResult", sender: nil)
         } else {
             // 更新
             quizNumber = quizNumber + 1
             quizTextView.text = quizArray[quizNumber].0
         }
+    }
+    
+    func resetResult() {
+        // シャッフル
+        shuffleQuiz()
+        
+        // 結果をリセット
+        quizNumber = 0
+        point = 0
+        quizTextView.text = quizArray[quizNumber].0
+    }
+    
+    // シャッフル機能
+    func shuffleQuiz() {
+        var shuffledQuizArray: [(String, Int, Int)] = []
+        for _ in 0..<quizArray.count {
+            let index = Int(arc4random_uniform(UInt32(quizArray.count)))
+            shuffledQuizArray.append(quizArray[index])
+            quizArray.remove(at: index)
+        }
+        quizArray = shuffledQuizArray
     }
     
     @IBAction func tappedMaru() {
@@ -80,35 +112,6 @@ class ViewController: UIViewController {
         // 問題文を更新
         updateQuizText()
     }
-
-    func showResult() {
-        // アラートで結果を表示
-        let alert = UIAlertController(title: "結果", message: "\(point)点でした", preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default, handler: { action in
-            self.resetResult()
-        })
-        alert.addAction(okAction)
-        self.present(alert, animated: true, completion: nil)
-    }
     
-    func resetResult() {
-        // 結果をリセット
-        self.quizNumber = 0
-        self.point = 0
-        quizTextView.text = quizArray[quizNumber].0
-        
-        // シャッフル
-        shuffleQuiz()
-    }
-
-    func shuffleQuiz() {
-        var shuffledQuizArray: [(String, Int, Int)] = []
-        for _ in 0..<quizArray.count {
-            let index = Int(arc4random_uniform(UInt32(quizArray.count)))
-            shuffledQuizArray.append(quizArray[index])
-            quizArray.remove(at: index)
-        }
-        quizArray = shuffledQuizArray
-    }
 }
 
